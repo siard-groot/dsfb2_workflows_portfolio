@@ -1,14 +1,12 @@
 ---
 title: "A"
 date: "`r Sys.Date()`"
-site: bookdown::bookdown_site
 output:
   bookdown::gitbook:
     number_sections: false
-documentclass: book
 ---
 # Siard Groot
-### student
+student
 
 ### Education
 **University of applied sciences Utrecht<br>
