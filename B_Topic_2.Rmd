@@ -1,5 +1,0 @@
----
-title: "C"
----
-# Vrije opdracht
-Hallo
