@@ -1,9 +1,18 @@
 ---
-title: "Portfolio"
+title: "A"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
-output: bookdown::gitbook
+output:
+  bookdown::gitbook:
+    number_sections: false
 documentclass: book
 ---
-# intro
-Hoi
+# Siard Groot
+### student
+
+### Education
+**University of applied sciences Utrecht<br>
+September 2023-Present**
+
+- Specialisation: Biomolecular Research
+- Minor: Data Sciences for Biology

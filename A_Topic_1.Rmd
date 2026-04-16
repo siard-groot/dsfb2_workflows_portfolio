@@ -1,9 +1,7 @@
 ---
-title: "Topic2"
-date: "`r Sys.Date()`"
-site: bookdown::bookdown_site
-output: bookdown::gitbook
-documentclass: book
+title: "B"
 ---
-# topic 1
-Hey
+# Plan voor de toekomst
+## Ideale baan
+## Vooruitgang
+## Benodigdheden 
