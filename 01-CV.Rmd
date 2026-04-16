@@ -1,0 +1,111 @@
+# CV
+**Siard Groot**<br>
+student
+
+---
+
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+<div>
+## Profile
+
+I’m a third-year student studying for my bachelors in life sciences at the University of Applied Sciences in Utrecht. I have a broad interest in the molecular mechanism of the body, ranging from the development of T-cells and their role in the immune system, to the metabolism of drugs by the liver. I’m looking for a 10-month internship in Norway.
+</div>
+
+<div>
+## Personal qualities
+
+- Curious  
+- Conscientious  
+- Patient  
+</div>
+
+</div>
+
+---
+
+## Education
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+<div>
+**University of applied sciences Utrecht<br>
+September 2023-Present**<br>
+Bachelor Life Sciences
+
+- Specialisation: Biomolecular Research
+- Minor: Data Sciences for Biology
+</div>
+
+<div>
+**Stischtse Vrije School<br>
+September 2016-June 2022**<br>
+Highschool
+
+- Have Nature & Health
+</div>
+
+</div>
+
+---
+
+## Skills
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+<div>
+**Laboratory skills**<br>
+A list of the most important techniques I have covered during my bachelors
+
+- Cell culture techniques
+- gel elektroforesis techniques<br>(e.g. SDS_PAGE)
+- (q)PCR
+- plasmid design & transfection
+- HPLC
+- ELISE
+</div>
+
+<div>
+**Data Science skills**
+
+- Programming languages: R and Bash
+- Basic data analysis workflow
+- RNA sequencing
+- Meta genomics
+- w.i.p.
+</div>
+
+</div>
+
+---
+
+## Languages
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+<div>
+**Dutch**<br>
+Native Language
+</div>
+
+<div>
+**English**<br>
+Cambridge English C1 (2022)
+</div>
+
+</div>
+
+---
+
+## Job experience
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+<div>
+**Picnic(delivery)**<br>
+May 2025 - present
+</div>
+
+<div>
+**Band op Spanning**<br>
+December 2022 - september 2024
+</div>
+
+</div>
+
