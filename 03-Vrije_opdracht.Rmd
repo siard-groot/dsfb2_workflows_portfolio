@@ -1,3 +1,35 @@
 # Vrije opdracht
 
-Iets met llm of single-cell RNA-seq ofz
+## Keuze onderwerp
+Ik heb er voor gekozen om mijzelf te verdiepen in het analyseren van single cell RNA-sequencing data.
+
+
+## Theoretische achtergrond
+### Wat is single cell RNA-sequncing
+Single cell RNA-sequencing (scRNA-seq) is een methode om verschillende celtypes in een heterogeen monster/biopt te identificeren. Voor deze techniek is zowel de praktische uitvoering als de juiste analyse van de data essentieel
+om verschillende celtypes te kunnen identificeren.
+
+In het praktische deel word een biopt of ander type monster (b.v. hersenweefsel of bloed). Het biopt word gesuspendeerd zodat alle cellen los van elkaar in de oplossing zitten. Vervolgens is het de bedoeling dat al het RNA in één cel een unieke barcode krijgt, en dat elk RNA fragment in één cel een Unique Molecular Identifier (UMI) krijgt. De barcode kan worden gebruikt om al het RNA uit één cel te kunnen identificeren. De UMI is belangrijk om te bepalen hoeveel (na amplificatie d.m.v. PCR) unieke fragmenten er zijn en hoe vaak deze geamplificeerd zijn. Zonder UMI kan je bijvoorbeeld niet achterhalen of 1 frament 100 keer is geamplificeerd tijdens PCR, of dat er 100 van deze fragmenten al aanwezig waren in de cel.
+
+Deze barcode en UMI worden aan een cel gekoppeld via beads die gecoat zijn met RNA sequenctie die de barcode en UMI bevatten. Hiervoor is speciaal microfluidics aperatuur ontwikkeld die er voor zorgen dat één cel en één bead in een klein olie druppeltje terecht komen. In de druppel word de cel gelyseerd, binden de RNA fragmenten van de cel aan de RNA fragmenten op de bead en vind er reverse transcriptie plaats (cDNA synthese). Vervolgens worden de fragmenten geamplificeerd d.m.v. PCR en tot slot worden de fragmenten gesequenced met b.v. een illumina sequencer. Voor het sequencen krijgen de cDNA fragmenten sequencing adapters die nodig zijn om te binden bij illumina sequencing. Dit is het einde van de praktische uitvoering van scRNA-seq. De rest van de analyse word digitaal uitgevoerd met bijvoorbeeld R.
+
+### Anylseren van single cell RNA-sequencing data in R
+De output van het sequencen zijn FASTQ bestanden
+
+## Planning
+- learn how to use the seurat package using a tutorial (2 weken)
+- perform the analysis on real sequencing data from an experiment (2 weken)
+- try and automate the analysis (1 week)
+
+
+
+
+## Bronnen
+https://www.10xgenomics.com/blog/how-does-single-cell-rna-seq-work
+https://www.10xgenomics.com/blog/how-single-cell-sequencing-data-analysis-works
+https://satijalab.org/seurat/articles/pbmc3k_tutorial
+
+
+
+
+##
