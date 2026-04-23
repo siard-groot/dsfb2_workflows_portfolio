@@ -28,6 +28,7 @@ De output van het sequencen zijn FASTQ bestanden
 https://www.10xgenomics.com/blog/how-does-single-cell-rna-seq-work
 https://www.10xgenomics.com/blog/how-single-cell-sequencing-data-analysis-works
 https://satijalab.org/seurat/articles/pbmc3k_tutorial
+https://cellxgene.cziscience.com/datasets
 
 
 
