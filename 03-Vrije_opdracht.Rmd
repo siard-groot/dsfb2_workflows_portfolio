@@ -17,9 +17,8 @@ Deze barcode en UMI worden aan een cel gekoppeld via beads die gecoat zijn met R
 De output van het sequencen zijn FASTQ bestanden
 
 ## Planning
-- learn how to use the seurat package using a tutorial (2 weken)
-- perform the analysis on real sequencing data from an experiment (2 weken)
-- try and automate the analysis (1 week)
+- learn how to use the seurat package using a tutorial (20 uur)
+- perform the analysis on real sequencing data from an experiment (12 uur)
 
 
 
