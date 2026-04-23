@@ -1,0 +1,57 @@
+### Reproducible Science
+
+## Reproducing a dataset 
+```{r libraries}
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+```
+
+
+```{r import data, warning=F}
+# Import data
+celiqflow <- read_xlsx(here::here("data/CE.LIQ.FLOW.062_Tidydata.xlsx"),
+                  sheet = 1,)
+
+# Change column variable type
+celiqflow$compConcentration <- as.numeric(gsub(",",".",celiqflow$compConcentration))
+```
+
+```{r point graph, warning=F}
+# Create graph
+celiqflow %>% 
+  ggplot(aes(x = log10(compConcentration), y = RawData,
+             colour = compName, shape = expType)) +
+  geom_point() +
+  geom_jitter(width = 0.1, height = 0.1) +
+  labs(title = "Amount of C.elegans after exposure to chemicals",
+       x = "Concentration (pct)",
+       y = "Count") +
+  theme_classic()
+```
+
+```{r normalise data}
+# Normalise data
+celiqflow_normalised <- celiqflow %>%
+  mutate(normalised = RawData - elegansInput) %>% 
+  mutate(normalised = normalised / mean(normalised, na.rm = T))
+```
+
+```{r normalised point graph}
+celiqflow_normalised %>% 
+  ggplot(aes(x = log10(compConcentration), y = normalised,
+             colour = compName, shape = expType)) +
+  geom_point() +
+  geom_jitter(width = 0.1, height = 0.1) +
+  labs(title = "Amount of C.elegans after exposure to chemicals",
+       x = "Concentration (pct)",
+       y = "Count") +
+  theme_classic()
+```
+
+De negatieve controle zijn C.elegans die niet behandeld zijn met medium i.p.v. een chamicalië. De positieve controles zijn behandeld met ethanol waarvond bekend is dat het toxisch is voor C.elegans. Aan de hand van de controles kan worden vastgested of spreiding van de data eruit ziet zoals verwacht word. Ook kan op basis van de controles worden ingechat hoe sterk het effect is van een experimentele conditie.
+
+De data is genormaliseerd door de elegans input van de RawData af te trekken en deze waardes door het gemiddelde te delen van de gecorrigeerde data.
+
+## Beoordeling op reproduceerbaarheid van een artikel
+
