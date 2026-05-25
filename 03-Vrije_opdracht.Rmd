@@ -20,16 +20,94 @@ De output van het sequencen zijn FASTQ bestanden
 - learn how to use the seurat package using a tutorial (20 uur)
 - perform the analysis on real sequencing data from an experiment (12 uur)
 
+## Uitvoering op dataset
+The dataset I have chosen to perform the analysis on is one from the Human Immune Health Atlas, found on CELLxGENE. They have  many datasets on specific cells and I have chosen one about CD4 T cells because of my interest in immunology.
 
 
+```{r 03 libraries, include=F}
+library(Seurat)
+library(patchwork)
+options(Seurat.object.assay.version = "v3")
+```
+
+### Step 1. Create a Seurat object
+First a seurat object has to be creating using the data. This is an introduced datatype which stores results during the analysis. Because my data is of the .h5ad type I first need to convert it so its compatable with seurat. I'm using the SeuratDisk package for this.
+
+```{r Unpack data, eval=F}
+untar("data/scrna_data/pbmc_unsorted_10k_filtered_feature_bc_matrix.tar.gz", 
+      exdir = "data/scrna_data/")
+```
+
+```{r create seurat object}
+counts <- Read10X(data.dir = "data/scrna_data/filtered_feature_bc_matrix/")
+
+pbmc <- CreateSeuratObject(counts, project="pbmc10k")
+```
+
+
+### Step 2. Quality control
+The next step is to do a quality control by applying filters to the dataset. These filters may include removing Cells with too few or too many genes detected and removing cells with high mitochondrial transcript percentage which may indicate stress. This last filter needs to be calculated manually. 
+
+First we check if the distribution of the different features is as expected. nFeature_RNA is the number of unique detected genes and nCount_RNA is the total number of transcripts. the percent.mt is the percentage of transcripts that come from mitochondrial genes per cell. A low percentage (0-20) indicates the cells are healthy.
+
+The graph shows that both nFeature and nCount are high. If the transcript count is high that should mean that a lot of genes are detected aswell, meaning the dsitribution looks normal. Percent.mt is below 5 percent which indicates the cells did not experience stress.
+
+```{r Visualise distribution, warning=F}
+# Calculate mitochondrial transcirpt percentage
+pbmc[["percent.mt"]] <- PercentageFeatureSet(pbmc, pattern = "^MT[-\\.]")
+
+# Visualise transcript distribution
+VlnPlot(pbmc,
+        features = c("nFeature_RNA", "nCount_RNA", "percent.mt"),
+        ncol=3,
+        pt.size=0,
+        cols = "#41b6c4")
+```
+
+To decide where to cutoff the data the Ncount_RNA is plotted against the other two features. Most cells seem to have a mitochondrial transcript expresion below 10%. Because I dont want to cut out too many cells I've decided to choose 15% as the cutoff value. The correlation between nFeature and nCount is quite high (0.97) so not a lot of trimming needs to be done. I've decided for a cutoff value of 30k.
+
+```{r feature scatter, fig.width=10, fig.height=6, out.width="100%"}
+# Plot distribution
+plot1 <- FeatureScatter(pbmc, feature1 = "nCount_RNA", feature2 = "percent.mt", cols = "#2c7fb8")
+plot2 <- FeatureScatter(pbmc, feature1 = "nCount_RNA", feature2 = "nFeature_RNA", cols = "#a1dab4")
+plot1 + plot2
+```
+
+```{r data cutoff}
+# Cutoff data
+pbmc <- subset(pbmc, subset =
+                 nFeature_RNA > 500 &
+                 nFeature_RNA < 30000 &
+                 percent.mt <15)
+```
+
+### Step 3 Normalization
+Because the number of RNA transcripts can differ per cell, the data has to be normalized so the RNA read count actually represents the expression of a gene compared to other cells.
+
+```{r normalize data}
+pbmc <- NormalizeData(pbmc)
+```
+## Step 4. Feature selection for following heterogeneity analysis
+Different cell types can be identified based on their distinct expression signature. To do this you have to look at the genes which are most variably expressed across cells and filter out genes with low expression levels or genes which are expressed consistently across most celltypes. These highly variable genes are called features.
+
+There is no rule of thumb to choose the feature count, but usually a featurecount between 2000 and 5000 will obtain good results. Because this is a well defined dataset, I'm choosing 200 features whihc is seen as the standard.
+
+```{r Select features, results='hide'}
+pbmc <- FindVariableFeatures(pbmc, nfeatures = 2000)
+```
+
+```{r plot top features, warning=FALSE, out.width="100%", fig.width=10, fig.height=6}
+top_features <- head(VariableFeatures(pbmc), 10)
+plot1 <- VariableFeaturePlot(pbmc)
+plot2 <- LabelPoints(plot = plot1, points = top_features, repel = TRUE)
+plot1 + plot2
+```
+
+## Step 5. Data scaling
+Because some genes are more highly expressed they will seem to contribute more to the analysis even though all genes should have the same contribution. To solve this the data gets scaled. Additionally unwanted sources of variation can be removed. It is advised to only do this after obtaining the first results and checking for unwated variation.
 
 ## Bronnen
 https://www.10xgenomics.com/blog/how-does-single-cell-rna-seq-work
 https://www.10xgenomics.com/blog/how-single-cell-sequencing-data-analysis-works
 https://satijalab.org/seurat/articles/pbmc3k_tutorial
 https://cellxgene.cziscience.com/datasets
-
-
-
-
-##

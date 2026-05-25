@@ -1,3 +1,30 @@
 # Datamanagement
 
+```{r 04 libraries, echo=F}
+library(patchwork)
+```
+## RNA-seq repository
+Here is an image of my directory tree and readme content from my daur2 project. I recreated the directories because I had to delete all original files in order to save space on the server.
+<br>
+```{r 04 rnaseq directory, echo=F}
+knitr::include_graphics(here::here("images/daur2_directory_screenshot.png"))
+```
+
+```{r 04 rnaseq readme, echo=F}
+knitr::include_graphics(here::here("images/daur2_readme_screenshot.png"))
+```
+
 ## Portfolio repository
+These is an image of my portfolio directory and readme file as of currently.
+<br>
+```{r 04 portfolio dir1, echo=F}
+knitr::include_graphics(here::here("images/portfolio_dir_screenshot_2.png"))
+```
+
+```{r 04 portfolio dir2, echo=F}
+knitr::include_graphics(here::here("images/portfolio_dir_screenshot_1.png"))
+```
+
+```{r 04 portfolio readme, echo=F}
+knitr::include_graphics(here::here("images/portfolio_readme_screenshot.png"))
+```

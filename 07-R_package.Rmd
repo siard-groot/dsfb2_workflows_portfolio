@@ -1,0 +1,7 @@
+# R package
+
+For this exercise I made an R package containing a few functions aimed to provide some entertainment in the R console. Click [here](https://github.com/siard-groot/ABitBored) to go to the github page of the package or install the package directly on R using the following code:
+
+```{r 07 install package,eval=F}
+remotes::install_github("siard-groot/ABitBored")
+```

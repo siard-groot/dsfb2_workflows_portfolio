@@ -1,0 +1,128 @@
+# Report for Netherlands in January, 2021
+
+```{r setup, include=F}
+library(tidyverse)
+library(av)
+```
+
+```{r load data, include=F}
+# read csv
+covid_data <- read.csv(here::here("data/data.csv"))
+unique(covid_data$month)
+# month to number
+month_num <- match("January", month.name)
+```
+
+<br> 
+```{r overview plot, echo=F}
+# filter data
+plot_year <- covid_data |> 
+  filter(countriesAndTerritories == "Netherlands",
+         year == 2021)
+# Scale factor for deaths on second axis
+scale_factor <- max(plot_year$cases) / max(plot_year$deaths)
+# plot
+plot_year |> 
+  group_by(month) |>
+  summarise(mean_cases = mean(cases),
+            mean_deaths = mean(deaths)) |> 
+  ggplot(aes(x = month, y = mean_cases)) +
+  geom_line(aes(y = mean_deaths * scale_factor), color = "#2A9D8F") +
+  scale_x_continuous(breaks = 1:12) +
+  scale_y_continuous(
+    name = "Cases",
+    sec.axis = sec_axis(~ . / scale_factor, name = "Deaths")) +
+  geom_line() +
+  labs(title = "Average number of cases and deaths per month",
+       subtitle = paste("In", "Netherlands", 2021),
+       x     = "Months",
+       y     = "Cases") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold", size=15),
+        axis.title = element_text(face = "bold"),
+        axis.text = element_text(color = "grey40"),
+        panel.grid.minor = element_blank()) +
+  geom_vline(xintercept = (month_num - 0.5), color = "red", linetype = "dashed") +
+  geom_vline(xintercept = (month_num + 0.5), color = "red", linetype = "dashed")
+```
+
+<br> 
+<br> 
+<br> 
+
+```{r cases, echo=F}
+# Filter data on parameters
+plot_cases <- covid_data |>  
+  filter(countriesAndTerritories == "Netherlands",
+         year == 2021,
+         month == month_num)
+mean_cases  <- round(mean(plot_cases$cases), 0)
+mean_deaths <- round(mean(plot_cases$deaths), 0)
+# plot graph
+plot_cases |> 
+  ggplot(aes(x=day, y=cases, fill = cases)) +
+  geom_col() +
+  scale_fill_gradient2(low="#2A9D8F",
+                       mid="#F4A261",
+                       high="red",
+                       midpoint = (max(plot_cases$cases) + min(plot_cases$cases)) / 2) +
+  labs(title = "Number of covid cases per day",
+       subtitle = paste("January", 2021, ",", "Netherlands"),
+       x = "Days",
+       y = "Number of cases") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold", size=15),
+        axis.title = element_text(face = "bold"),
+        axis.text = element_text(color = "grey40")) +
+  geom_hline(yintercept = mean_cases, linetype = "dashed", color = "black") +
+  annotate("text",
+           x = 25,
+           y = mean_cases * 1.5,
+           label = paste("Case average:", mean_cases))
+```
+
+<br>  
+<br>  
+<br> 
+
+```{r deaths, echo=F}
+# plot graph
+plot_cases |> 
+  ggplot(aes(x=day, y=deaths, fill = deaths)) +
+  geom_col() +
+  scale_fill_gradient2(low="#2A9D8F",
+                       mid="#F4A261",
+                       high="red",
+                       midpoint = (max(plot_cases$deaths) + min(plot_cases$deaths)) / 2) +
+  labs(title = "Number of covid related deaths per day",
+       subtitle = paste("January", 2021, ",", "Netherlands"),
+       x = "Days",
+       y = "Number of Deaths") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold", size=15),
+        axis.title = element_text(face = "bold"),
+        axis.text = element_text(color = "grey40")) +
+  geom_hline(yintercept = mean_deaths, linetype = "dashed", color = "black") +
+  annotate("text",
+           x = 25,
+           y = mean_deaths * 1.75,
+           label = paste("Deaths average:", mean_deaths))
+```
+
+<br> 
+<br> 
+
+### Data summary
+
+```{r summary, echo=F}
+summary(plot_cases)
+```
+
+## Video of parameterized rmd
+
+<iframe width="560" height="315" 
+  src="https://www.youtube.com/embed/6Ot5TOuEXXo"
+  frameborder="0" allowfullscreen>
+</iframe>
+
+# Bibliografie

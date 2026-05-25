@@ -1,16 +1,17 @@
-### Reproducible Science
+# Reproducible Science
+Reproduceerbaarheid houdt in dat onderzoekers die beschikken over dezelfde dataset en dezelfde scripts tot dezelfde conclusie moeten komen. Hiervoor is het nodig dat de data uit een onderzoek publiek is en dat alle analyses nauwkeurig zijn uitgevoerd en genoteerd in bijvoorbeeld een script. In veel publicaties is dit niet het geval. Vaak word de ruwe data of de uitgevoerde analyses achtergehouden waardoor de resultaten niet gereproduceerd kunnen worden.
 
 ## Reproducing a dataset 
-```{r libraries}
+```{r 05 libraries, echo=F}
 library(readxl)
 library(tidyverse)
 library(ggplot2)
+library(magick)
 ```
-
 
 ```{r import data, warning=F}
 # Import data
-celiqflow <- read_xlsx(here::here("data/CE.LIQ.FLOW.062_Tidydata.xlsx"),
+celiqflow <- read_xlsx(here::here("data/reproducible_data/CE.LIQ.FLOW.062_Tidydata(1).xlsx"),
                   sheet = 1,)
 
 # Change column variable type
@@ -35,6 +36,7 @@ celiqflow %>%
 celiqflow_normalised <- celiqflow %>%
   mutate(normalised = RawData - elegansInput) %>% 
   mutate(normalised = normalised / mean(normalised, na.rm = T))
+view(celiqflow)
 ```
 
 ```{r normalised point graph}
@@ -54,4 +56,37 @@ De negatieve controle zijn C.elegans die niet behandeld zijn met medium i.p.v. e
 De data is genormaliseerd door de elegans input van de RawData af te trekken en deze waardes door het gemiddelde te delen van de gecorrigeerde data.
 
 ## Beoordeling op reproduceerbaarheid van een artikel
+Artikel: Quantifying viral pandemic potential from experimental transmission studies
 
+Om toekomstige pandemiën te voorspellen word er onderzoek gedaan naar dierlijke virussen die een mogelijk risico vormen voor mensen. De huidige methoden die worden gebruikt om de kans op een pandemie te voorspellen zijn gelimiteerd en zeggen niet altijd iets over de besmettelijkheid onder mensen. In dit onderzoek word een model gepresenteerd die de resultaten van dierlijke transmissiestudies gebruikt om een  kwantitatieve inschatting te maken van het risico op een pandemie.
+
+Het analytische model dat word gepresenteerd lijkt goed te werken. De spreiding van twee influenza virussen onder fretten is getest en vergeleken met data van de werkeleijke verspreiding van het virus. Er worden wel een paar aannames gedaan. Onder andere dat de transmissie tussen fretten dezelfde dynamiek heeft als tussen mensen.
+
+## Beoordeling op basis van criteria
+
+```{r, echo=F}
+knitr::include_graphics(here::here("images/Screenshot 2026-05-03 at 15.42.16.png"))
+```
+
+## Reproductie van de data
+As seen in the table above, the paper meets most of the requirements except for the ethics statement. The data is obtainable through a github page. It contains two folders of which the content isn't immediately deducible. Both folders contain scripts. Furthermore, two csv files along with similarly named R scripts named after the two influenza variants (H1N1, H3N2) used in the experiment are found in the repository. Lastly 3 R scripts can be found in the repository.
+
+The readme file contains an introduction and a link to the article and the origin of the data. Explanations of all the files and folders are provided as well.
+
+I loaded the github repository in Rstudio and tried to execute the two scripts which visualises the initial data of each variant before any downstream analysis is done. Besides having to install a few packges, the script ran without error. The following two images were generated showing the Viral titer over time after ferrets got exposed to the virus.
+
+```{r virus titer graph,echo=F}
+img1 <- image_read(here::here("images/H1N1_plot.png"))
+img2 <- image_read(here::here("images/H3N2_plot.png"))
+image_append(c(img1,img2),stack=F)
+```
+<br>
+<br>
+I also managed to generate this image showing the likelyhood of transmission (A) based on the calculated parameter "s" and the probability of transmission based on the viral titer(B).
+
+```{r viral_titer graph,echo=F}
+knitr::include_graphics(here::here("images/viral_titer.png"))
+```
+<br>
+<br>
+I tried running some other scripts which performs some of their analyses, but those would have taken too long to execute fully (hours). They seemed to be executing without error non the less. I decided to grade the reproducibility of the data 4/5. I was surprised by the fact that I could run the analyses without any errors. And the scripts generated the exact graphs used in the paper. The only remark I have is on the documentation and organisation of the scripts. They could provide some more detail regarding the function of the scripts and perhaps on the run time of the scripts. Lastly the data could have been put in a seperate data folder and all the scripts in a folder with respective subfolders.
