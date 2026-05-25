@@ -11,4 +11,4 @@ output:
 ---
 
 # Introductie
-Welkom op mijn persoonlijke website.
+Voor mijn minor data science heb ik deze portfolio opgesteld. Hier kan je mijn CV vinden mijn toekomst plannen en de verwerking van een aantal opdrachten. De opdrachten hebben het doel om de skills die we eerder in de curses hebben geleerd toe te passen zoals we dit mogelijk in het werkveld moeten gaan doen. Zo heb ik een eigen R package moeten maken, hebben ik de reproduceerbaarheid van de data uit een artikel beoordeeld en heb ik me verdiept in single cell RNA sequencing data analyse met seurat.

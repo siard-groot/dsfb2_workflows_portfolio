@@ -1,32 +1,29 @@
 # Vrije opdracht
 
 ## Keuze onderwerp
-Ik heb er voor gekozen om mijzelf te verdiepen in het analyseren van single cell RNA-sequencing data.
+Ik heb ervoor gekozen om mezelf te verdiepen in het analyseren van single-cell RNA-sequencingdata. In laboratoria waar onderzoek wordt gedaan naar cellen en subtypes is dit een belangrijke vaardigheid om te hebben. Ik ben op zoek naar een stage in de immunologie, en in veel gevallen betekent dat dat je met cellen werkt en onderzoek doet naar cellen.
 
+## Wat is single-cell RNA-sequencing?
+Single-cell RNA-sequencing (scRNA-seq) is een methode om verschillende celtypes in een heterogeen monster of biopt te identificeren. Voor deze techniek zijn zowel de praktische uitvoering als de juiste analyse van de data essentieel om verschillende celtypes te kunnen identificeren.
 
-## Theoretische achtergrond
-### Wat is single cell RNA-sequncing
-Single cell RNA-sequencing (scRNA-seq) is een methode om verschillende celtypes in een heterogeen monster/biopt te identificeren. Voor deze techniek is zowel de praktische uitvoering als de juiste analyse van de data essentieel
-om verschillende celtypes te kunnen identificeren.
+In het praktische deel wordt een biopt of ander type monster (bijvoorbeeld hersenweefsel of bloed) gebruikt. Het biopt wordt gesuspendeerd zodat alle cellen los van elkaar in de oplossing zitten. Vervolgens is het de bedoeling dat al het RNA in één cel een unieke barcode krijgt en dat elk RNA-fragment in één cel een Unique Molecular Identifier (UMI) krijgt. De barcode kan worden gebruikt om al het RNA uit één cel te identificeren. De UMI is belangrijk om te bepalen hoeveel unieke fragmenten er zijn (na amplificatie door middel van PCR) en hoe vaak deze geamplificeerd zijn. Zonder UMI kun je bijvoorbeeld niet achterhalen of één fragment 100 keer is geamplificeerd tijdens PCR, of dat er al 100 van deze fragmenten aanwezig waren in de cel.
 
-In het praktische deel word een biopt of ander type monster (b.v. hersenweefsel of bloed). Het biopt word gesuspendeerd zodat alle cellen los van elkaar in de oplossing zitten. Vervolgens is het de bedoeling dat al het RNA in één cel een unieke barcode krijgt, en dat elk RNA fragment in één cel een Unique Molecular Identifier (UMI) krijgt. De barcode kan worden gebruikt om al het RNA uit één cel te kunnen identificeren. De UMI is belangrijk om te bepalen hoeveel (na amplificatie d.m.v. PCR) unieke fragmenten er zijn en hoe vaak deze geamplificeerd zijn. Zonder UMI kan je bijvoorbeeld niet achterhalen of 1 frament 100 keer is geamplificeerd tijdens PCR, of dat er 100 van deze fragmenten al aanwezig waren in de cel.
+Deze barcode en UMI worden aan een cel gekoppeld via beads die gecoat zijn met RNA-sequenties die de barcode en UMI bevatten. Hiervoor is speciale microfluidische apparatuur ontwikkeld die ervoor zorgt dat één cel en één bead in een klein oliedruppeltje terechtkomen. In de druppel wordt de cel gelyseerd, binden de RNA-fragmenten van de cel aan de RNA-fragmenten op de bead en vindt reverse transcriptie plaats (cDNA-synthese). Vervolgens worden de fragmenten geamplificeerd door middel van PCR en tot slot worden de fragmenten gesequenced met bijvoorbeeld een Illumina-sequencer. Voor het sequencen krijgen de cDNA-fragmenten sequencing adapters die nodig zijn om te binden tijdens Illumina-sequencing. Dit is het einde van de praktische uitvoering van scRNA-seq. De rest van de analyse wordt digitaal uitgevoerd met bijvoorbeeld R.
 
-Deze barcode en UMI worden aan een cel gekoppeld via beads die gecoat zijn met RNA sequenctie die de barcode en UMI bevatten. Hiervoor is speciaal microfluidics aperatuur ontwikkeld die er voor zorgen dat één cel en één bead in een klein olie druppeltje terecht komen. In de druppel word de cel gelyseerd, binden de RNA fragmenten van de cel aan de RNA fragmenten op de bead en vind er reverse transcriptie plaats (cDNA synthese). Vervolgens worden de fragmenten geamplificeerd d.m.v. PCR en tot slot worden de fragmenten gesequenced met b.v. een illumina sequencer. Voor het sequencen krijgen de cDNA fragmenten sequencing adapters die nodig zijn om te binden bij illumina sequencing. Dit is het einde van de praktische uitvoering van scRNA-seq. De rest van de analyse word digitaal uitgevoerd met bijvoorbeeld R.
-
-### Anylseren van single cell RNA-sequencing data in R
-De output van het sequencen zijn FASTQ bestanden
-
-## Planning
-- learn how to use the seurat package using a tutorial (20 uur)
-- perform the analysis on real sequencing data from an experiment (12 uur)
+## Analyseren van single-cell RNA-sequencingdata in R
+De twee bekendste packages in R die worden gebruikt voor scRNA-seq zijn Seurat en SingleCellExperiment (Bioconductor). Bioconductor is flexibeler dan Seurat en maakt deel uit van een heel ecosysteem van Bioconductor-functies. Seurat is specifiek ontwikkeld voor scRNA-seq en is eenvoudiger om te gebruiken, maar minder flexibel. Voor het leren analyseren van scRNA-seq is het makkelijker om eerst Seurat te leren en vervolgens bepaalde functies uit Bioconductor te gebruiken voor meer flexibiliteit. Daarom heb ik ervoor gekozen om eerst Seurat te leren en later in mijn loopbaan eventueel Bioconductor te leren.
 
 ## Uitvoering op dataset
-The dataset I have chosen to perform the analysis on is one from the Human Immune Health Atlas, found on CELLxGENE. They have  many datasets on specific cells and I have chosen one about CD4 T cells because of my interest in immunology.
+The dataset I have chosen to perform the analysis on is a PBMC datasest (Peripheral Blood Mononuclear Cells), found on 10x genomics. The cell contains 3k cells. I've first tried to use a dataset with 10k cells but my laptop did not have enough ram to handle this (specificaly when scaling the data).
 
 
 ```{r 03 libraries, include=F}
 library(Seurat)
 library(patchwork)
+library(knitr)
+library(tidyverse)
+library(MoMAColors)
+library(dplyr)
 options(Seurat.object.assay.version = "v3")
 ```
 
@@ -34,14 +31,15 @@ options(Seurat.object.assay.version = "v3")
 First a seurat object has to be creating using the data. This is an introduced datatype which stores results during the analysis. Because my data is of the .h5ad type I first need to convert it so its compatable with seurat. I'm using the SeuratDisk package for this.
 
 ```{r Unpack data, eval=F}
-untar("data/scrna_data/pbmc_unsorted_10k_filtered_feature_bc_matrix.tar.gz", 
+# Only run first time using new data
+untar("data/scrna_data/pbmc_unsorted_3k_filtered_feature_bc_matrix.tar.gz", 
       exdir = "data/scrna_data/")
 ```
 
-```{r create seurat object}
+```{r create seurat object, results='hide'}
 counts <- Read10X(data.dir = "data/scrna_data/filtered_feature_bc_matrix/")
 
-pbmc <- CreateSeuratObject(counts, project="pbmc10k")
+pbmc <- CreateSeuratObject(counts, project="pbmc3k")
 ```
 
 
@@ -64,7 +62,7 @@ VlnPlot(pbmc,
         cols = "#41b6c4")
 ```
 
-To decide where to cutoff the data the Ncount_RNA is plotted against the other two features. Most cells seem to have a mitochondrial transcript expresion below 10%. Because I dont want to cut out too many cells I've decided to choose 15% as the cutoff value. The correlation between nFeature and nCount is quite high (0.97) so not a lot of trimming needs to be done. I've decided for a cutoff value of 30k.
+To decide where to cutoff the data the Ncount_RNA is plotted against the other two features. Most cells seem to have a mitochondrial transcript expresion below 10%. Because I dont want to cut out too many cells I've decided to choose 15% as the cutoff value. The correlation between nFeature and nCount is quite high (0.97) so not a lot of trimming needs to be done. I've decided for a cutoff value of 17k.
 
 ```{r feature scatter, fig.width=10, fig.height=6, out.width="100%"}
 # Plot distribution
@@ -74,37 +72,163 @@ plot1 + plot2
 ```
 
 ```{r data cutoff}
-# Cutoff data
+# Cut off data
 pbmc <- subset(pbmc, subset =
                  nFeature_RNA > 500 &
-                 nFeature_RNA < 30000 &
-                 percent.mt <15)
+                 nFeature_RNA < 17000 &
+                 percent.mt < 15)
 ```
 
 ### Step 3 Normalization
 Because the number of RNA transcripts can differ per cell, the data has to be normalized so the RNA read count actually represents the expression of a gene compared to other cells.
 
-```{r normalize data}
+```{r normalize data, results='hide'}
 pbmc <- NormalizeData(pbmc)
 ```
-## Step 4. Feature selection for following heterogeneity analysis
+### Feature selection for following heterogeneity analysis
 Different cell types can be identified based on their distinct expression signature. To do this you have to look at the genes which are most variably expressed across cells and filter out genes with low expression levels or genes which are expressed consistently across most celltypes. These highly variable genes are called features.
 
 There is no rule of thumb to choose the feature count, but usually a featurecount between 2000 and 5000 will obtain good results. Because this is a well defined dataset, I'm choosing 200 features whihc is seen as the standard.
 
 ```{r Select features, results='hide'}
-pbmc <- FindVariableFeatures(pbmc, nfeatures = 2000)
+pbmc[["RNA"]] <- JoinLayers(pbmc[["RNA"]])
+pbmc <- FindVariableFeatures(pbmc, selection.method = "vst", nfeatures = 2000)
+length(VariableFeatures(pbmc))
 ```
 
-```{r plot top features, warning=FALSE, out.width="100%", fig.width=10, fig.height=6}
+```{r plot top features, warning=FALSE, out.width="100%", fig.width=10, fig.height=6, message=F}
 top_features <- head(VariableFeatures(pbmc), 10)
 plot1 <- VariableFeaturePlot(pbmc)
 plot2 <- LabelPoints(plot = plot1, points = top_features, repel = TRUE)
 plot1 + plot2
 ```
 
-## Step 5. Data scaling
+## Data scaling
 Because some genes are more highly expressed they will seem to contribute more to the analysis even though all genes should have the same contribution. To solve this the data gets scaled. Additionally unwanted sources of variation can be removed. It is advised to only do this after obtaining the first results and checking for unwated variation.
+
+```{r Scale data, results='hide'}
+pbmc <- ScaleData(pbmc, 
+  vars.to.regress = c("nFeature_RNA", "percent.mt"),
+  features = VariableFeatures(pbmc))
+```
+
+## Linear dimensionality reduction using principal component analysis (PCA)
+Because scRNA data sets are so large, it is often preffered to perform a PCA early on to reduce the ammount of data that is worked with. A PCA summarises the information which is to be gathered from a dataset in so called principle components. Choosing the ammount of PC's to move on with can be difficult but 15 or 20 is relatively standard.
+
+```{r PCA, results='hide'}
+pbmc <- RunPCA(pbmc, npcs = 50)
+ElbowPlot(pbmc, ndims = ncol(Embeddings(pbmc, "pca")))
+```
+<br>  
+The heatmap below shows the correlation between genes and indirectly the different celtypes which are present in the dataset. The yellow and pink indicate the the variation that has been captured within a PC. PC_1 shows major variation between genes and thus cell types. Lower PC's capture less variation but may still explain subtle variances necessary for distinguishing cell types
+
+```{r heatmap, fig.width=12, fig.height=12, out.width="100%", message=F}
+PCHeatmap(pbmc, dims = 1:20, cells = 500, balanced = TRUE, ncol = 3) +
+  scale_fill_gradientn(colors = moma.colors("Exter"))
+```
+## Non-linear dimension reduction for visualization
+PC's offer a straight forward way to compress data without distorting it. The more PC's you decide to keep the more information you retain. The ammount of PC's you keep differs per dataset but its usually more then 10. This makes plotting the differences difficult because you can make a graph which contains 10+ dimensions. To overcome this issue an non-linear dimension reduction is performed to allow researcher to plot multiple PC's in a single graph 2 dimensional graph. The most common reduction methods used are t-dsitributed Stochastic Neighbor Embedding (t-SNE) and Uniform Manifold Approximation and Projection (UMAP). Because the math is very difficult I won't be immersing myself in the details.
+
+I've chosen to keep 10-15 PC's. The dataset doesnt have a lot of cells so I'd like to keep a bit more infromation.
+
+```{r Dimension Reduction, results='hide'}
+pbmc <- RunTSNE(pbmc, dims = 1:10)
+pbmc <- RunUMAP(pbmc, dims = 1:10)
+```
+
+```{r Dimension Reduction Plot, fig.width=10, fig.height=4, out.width="100%"}
+plot1 <- TSNEPlot(pbmc, cols = "#a1dab4")
+plot2 <- UMAPPlot(pbmc, cols = "#a1dab4")
+plot1 + plot2
+```
+
+The ultimate goal is to visualise the different cell types within a sample. Both plots do a good job in showing distinct groups of cells (in a later stage of the analysis the present cell types will be pinpointed within the graph). The only way to decide which graph is the best choice for your data is to plot them both.
+
+Now we will start distinguishing the different celltypes present in the sample. We start by looking at the expression of certain genes by creating a feature plot. The genes you should choose depend on the cells you expect to be in the data, and which cells you want to distinguish. For PBMC data sets the following genes are comonly used:
+
+```{r Gene table, echo=F}
+markers <- data.frame(
+  Gene = c("MS4A1", "GNLY", "CD3E", "CD14", "FCER1A", "FCGR3A", "LYZ", "PPBP"),
+  Cell_Type = c("B cells", "NK cells", "T cells", "CD14 Monocytes", 
+                "Dendritic cells", "FCGR3A Monocytes", "CD14 Monocytes", "Platelets")
+)
+
+kable(markers)
+```
+
+Feature plots show which genes are highly expressed in which area of the TSNE/UMAP plots. In the table above we can see that CD14 is expressed in CD14 monocytes. If you look at the feature plot for CD14 we can see most cells expressing this gene are located in the upperm most cluster.
+
+```{r feature plot,fig.width=9, fig.height=10, out.width="100%"}
+FeaturePlot(pbmc, features = c("MS4A1", "GNLY", "CD3E", "CD14", 
+                                "FCER1A", "FCGR3A", "LYZ", "PPBP"))
+```
+
+## Step 8. Cluster the cells
+Feature plots are great for visualising different cell groups if you already know what you are looking for (by choosing which genes to visualise). If you have no expectations, or if you just want to get an indication of how many groups are in your data set, you can Cluster the cell (k) a pair of cells has based on the PC values. The higher the k the more likely two cells belong to the same group.
+
+The next step is to find communities within the data (groups of cells which are more closely related to eachother then other groups). This is done by the Louvain algorithm.
+
+The resolution of the clusters can be tweaked to either show fewer but broader clusters or smaller clusters which will contain more subtypes.
+
+```{r Cluster Cells, results='hide', message=FALSE}
+pbmc <- FindNeighbors(pbmc, dims = 1:10)
+pbmc <- FindClusters(pbmc, resolution =.5)
+```
+
+```{r Cluster Plot, fig.width=10, fig.height=6, out.width="100%"}
+plot1 <- DimPlot(pbmc, reduction = "tsne", label = TRUE, 
+  cols = moma.colors("Ernst", n = length(unique(pbmc$seurat_clusters))))
+plot2 <- DimPlot(pbmc, reduction = "umap", label = TRUE,
+  cols = moma.colors("Ernst", n = length(unique(pbmc$seurat_clusters))))
+plot1 + plot2
+```
+### Step 9. Annotate cell clusters
+Different groups of cells have been identified by clustering them. But what celtypes they represent isn't clear yet. For this we have to look at the gene expression of each group. You can look at very specific genes of which you know they correlate to a specific cell type. Or you look at highly expressed genes in each group and compare this to existing literature or existing reference data. The last option is probably the easiest, if possible. The markers used here are commonly used in PBMC datasets
+
+```{r Heatmaps of cluster genes, warning=F}
+markers <- c("MS4A1", "GNLY", "CD3E", "CD14", "FCER1A", "FCGR3A", "LYZ", "PPBP",
+             "IL7R", "CCR7", "S100A4", "CD8A", "MS4A7", "CST3", "TCL1A", "CD27",
+             "NKG7", "CCL5", "GZMK", "GZMH", "CD28", "ITGB1", "TREM1", "CDKN1C")
+DoHeatmap(pbmc, features = markers) + NoLegend()
+```
+Some variantion within each cluster is to be expected, but the cells within each cluster look quite similar as shown by the pattern in gene expression. This confirms the homogeneity of each cluster.
+
+Annotation can be made easier by first performing a differential expression analysis which looks at unique highly differentially expressed genes in each cluster. In this case the decision was made to look for 2  highly differentially expressed genes per cluster.
+
+```{r cluster markers, results='hide'}
+cl_markers <- FindAllMarkers(pbmc, only.pos = TRUE, min.pct = 0.25, logfc.threshold = log(1.2))
+cl_markers %>% group_by(cluster) %>% top_n(n = 2, wt = avg_log2FC)
+```
+
+```{r cluster markers heatplot,fig.width=10, fig.height=12, out.width="100%"}
+top10_cl_markers <- cl_markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_log2FC)
+DoHeatmap(pbmc, features = top10_cl_markers$gene) + NoLegend()
+```
+```{r}
+pbmc <- RenameIdents(pbmc,
+  "0" = "CD14 Monocytes",
+  "1" = "Intermediate Monocytes",
+  "2" = "Naive T cells",
+  "3" = "Memory T cells",
+  "4" = "CD8 T cells",
+  "5" = "Effector T cells",
+  "6" = "B cells",
+  "7" = "FCGR3A Monocytes",
+  "8" = "Naive B cells",
+  "9" = "Unknown",
+  "10" = "NK cells",
+  "11" = "Unknown",
+  "12" = "Dendritic cells",
+  "13" = "Rare/Unknown"
+)
+```
+
+```{r}
+DimPlot(pbmc, reduction = "umap", label = TRUE, repel = TRUE,
+  cols = moma.colors("Ernst", n = length(levels(pbmc)))) +
+  ggtitle("PBMC Cell Type Annotation")
+```
+
 
 ## Bronnen
 https://www.10xgenomics.com/blog/how-does-single-cell-rna-seq-work

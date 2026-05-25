@@ -15,6 +15,13 @@ anylseren-van-single-cell-rna-sequencing-data-in-r
 planning
 uitvoering-op-dataset
 step-1.-create-a-seurat-object
+step-2.-quality-control
+step-3-normalization
+feature-selection-for-following-heterogeneity-analysis
+data-scaling
+linear-dimensionality-reduction-using-principal-component-analysis-pca
+non-linear-dimension-reduction-for-visualization
+step-8.-cluster-the-cells
 bronnen
 datamanagement
 rna-seq-repository
@@ -27,7 +34,9 @@ reproductie-van-de-data
 sql
 r-package
 project-als-database
-bibliografie
 report-for-netherlands-in-january-2021
 data-summary
 video-of-parameterized-rmd
+bibliografie
+wat-is-single-cell-rna-sequencing
+analyseren-van-single-cell-rna-sequencingdata-in-r
