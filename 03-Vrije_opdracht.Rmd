@@ -24,10 +24,12 @@ library(knitr)
 library(tidyverse)
 library(MoMAColors)
 library(dplyr)
+library(SingleR)
+library(celldex)
 options(Seurat.object.assay.version = "v3")
 ```
 
-### Step 1. Create a Seurat object
+### Create a Seurat object
 First a seurat object has to be creating using the data. This is an introduced datatype which stores results during the analysis. Because my data is of the .h5ad type I first need to convert it so its compatable with seurat. I'm using the SeuratDisk package for this.
 
 ```{r Unpack data, eval=F}
@@ -43,7 +45,7 @@ pbmc <- CreateSeuratObject(counts, project="pbmc3k")
 ```
 
 
-### Step 2. Quality control
+### Quality control
 The next step is to do a quality control by applying filters to the dataset. These filters may include removing Cells with too few or too many genes detected and removing cells with high mitochondrial transcript percentage which may indicate stress. This last filter needs to be calculated manually. 
 
 First we check if the distribution of the different features is as expected. nFeature_RNA is the number of unique detected genes and nCount_RNA is the total number of transcripts. the percent.mt is the percentage of transcripts that come from mitochondrial genes per cell. A low percentage (0-20) indicates the cells are healthy.
@@ -79,7 +81,7 @@ pbmc <- subset(pbmc, subset =
                  percent.mt < 15)
 ```
 
-### Step 3 Normalization
+### Normalization
 Because the number of RNA transcripts can differ per cell, the data has to be normalized so the RNA read count actually represents the expression of a gene compared to other cells.
 
 ```{r normalize data, results='hide'}
@@ -88,7 +90,7 @@ pbmc <- NormalizeData(pbmc)
 ### Feature selection for following heterogeneity analysis
 Different cell types can be identified based on their distinct expression signature. To do this you have to look at the genes which are most variably expressed across cells and filter out genes with low expression levels or genes which are expressed consistently across most celltypes. These highly variable genes are called features.
 
-There is no rule of thumb to choose the feature count, but usually a featurecount between 2000 and 5000 will obtain good results. Because this is a well defined dataset, I'm choosing 200 features whihc is seen as the standard.
+There is no rule of thumb to choose the feature count, but usually a featurecount between 2000 and 5000 will obtain good results. Because this is a well defined dataset, I'm choosing 2000 features whihc is seen as the standard.
 
 ```{r Select features, results='hide'}
 pbmc[["RNA"]] <- JoinLayers(pbmc[["RNA"]])
@@ -103,7 +105,7 @@ plot2 <- LabelPoints(plot = plot1, points = top_features, repel = TRUE)
 plot1 + plot2
 ```
 
-## Data scaling
+### Data scaling
 Because some genes are more highly expressed they will seem to contribute more to the analysis even though all genes should have the same contribution. To solve this the data gets scaled. Additionally unwanted sources of variation can be removed. It is advised to only do this after obtaining the first results and checking for unwated variation.
 
 ```{r Scale data, results='hide'}
@@ -112,7 +114,7 @@ pbmc <- ScaleData(pbmc,
   features = VariableFeatures(pbmc))
 ```
 
-## Linear dimensionality reduction using principal component analysis (PCA)
+### Linear dimensionality reduction using principal component analysis (PCA)
 Because scRNA data sets are so large, it is often preffered to perform a PCA early on to reduce the ammount of data that is worked with. A PCA summarises the information which is to be gathered from a dataset in so called principle components. Choosing the ammount of PC's to move on with can be difficult but 15 or 20 is relatively standard.
 
 ```{r PCA, results='hide'}
@@ -126,7 +128,7 @@ The heatmap below shows the correlation between genes and indirectly the differe
 PCHeatmap(pbmc, dims = 1:20, cells = 500, balanced = TRUE, ncol = 3) +
   scale_fill_gradientn(colors = moma.colors("Exter"))
 ```
-## Non-linear dimension reduction for visualization
+### Non-linear dimension reduction for visualization
 PC's offer a straight forward way to compress data without distorting it. The more PC's you decide to keep the more information you retain. The ammount of PC's you keep differs per dataset but its usually more then 10. This makes plotting the differences difficult because you can make a graph which contains 10+ dimensions. To overcome this issue an non-linear dimension reduction is performed to allow researcher to plot multiple PC's in a single graph 2 dimensional graph. The most common reduction methods used are t-dsitributed Stochastic Neighbor Embedding (t-SNE) and Uniform Manifold Approximation and Projection (UMAP). Because the math is very difficult I won't be immersing myself in the details.
 
 I've chosen to keep 10-15 PC's. The dataset doesnt have a lot of cells so I'd like to keep a bit more infromation.
@@ -163,7 +165,7 @@ FeaturePlot(pbmc, features = c("MS4A1", "GNLY", "CD3E", "CD14",
                                 "FCER1A", "FCGR3A", "LYZ", "PPBP"))
 ```
 
-## Step 8. Cluster the cells
+### Cluster the cells
 Feature plots are great for visualising different cell groups if you already know what you are looking for (by choosing which genes to visualise). If you have no expectations, or if you just want to get an indication of how many groups are in your data set, you can Cluster the cell (k) a pair of cells has based on the PC values. The higher the k the more likely two cells belong to the same group.
 
 The next step is to find communities within the data (groups of cells which are more closely related to eachother then other groups). This is done by the Louvain algorithm.
@@ -182,7 +184,7 @@ plot2 <- DimPlot(pbmc, reduction = "umap", label = TRUE,
   cols = moma.colors("Ernst", n = length(unique(pbmc$seurat_clusters))))
 plot1 + plot2
 ```
-### Step 9. Annotate cell clusters
+### Annotate cell clusters
 Different groups of cells have been identified by clustering them. But what celtypes they represent isn't clear yet. For this we have to look at the gene expression of each group. You can look at very specific genes of which you know they correlate to a specific cell type. Or you look at highly expressed genes in each group and compare this to existing literature or existing reference data. The last option is probably the easiest, if possible. The markers used here are commonly used in PBMC datasets
 
 ```{r Heatmaps of cluster genes, warning=F}
@@ -195,7 +197,7 @@ Some variantion within each cluster is to be expected, but the cells within each
 
 Annotation can be made easier by first performing a differential expression analysis which looks at unique highly differentially expressed genes in each cluster. In this case the decision was made to look for 2  highly differentially expressed genes per cluster.
 
-```{r cluster markers, results='hide'}
+```{r cluster markers, results='hide', message=F}
 cl_markers <- FindAllMarkers(pbmc, only.pos = TRUE, min.pct = 0.25, logfc.threshold = log(1.2))
 cl_markers %>% group_by(cluster) %>% top_n(n = 2, wt = avg_log2FC)
 ```
@@ -204,7 +206,56 @@ cl_markers %>% group_by(cluster) %>% top_n(n = 2, wt = avg_log2FC)
 top10_cl_markers <- cl_markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_log2FC)
 DoHeatmap(pbmc, features = top10_cl_markers$gene) + NoLegend()
 ```
+
+
+
+Using SingleR the annotation of the cells can be performed. SingleR used a refference data set and compares it to the dataset I'm working with. In the graph you can see the detected celltypes.
+```{r Annotation, results='hide', message=F}
+ref <- celldex::HumanPrimaryCellAtlasData()
+pred <- SingleR(test = as.SingleCellExperiment(pbmc), ref = ref, labels = ref$label.main)
+pbmc$singler_labels <- pred$labels
+```
 ```{r}
+# Plot with SingleR labels
+DimPlot(pbmc, reduction = "umap", group.by = "singler_labels", 
+        label = TRUE, repel = TRUE) +
+        ggtitle("SingleR Cell Type Annotation")
+```
+
+This table shows how many of each cell type has been detected in each cluster. By looking at which cell type has the highest frequency in each cluster you can identify each cluster.
+```{r Annotation table}
+table(pbmc$seurat_clusters, pbmc$singler_labels)
+```
+
+```{r annotation}
+pbmc <- SetIdent(pbmc, value = pbmc$seurat_clusters)
+pbmc <- RenameIdents(pbmc,
+  "0" = "Monocyte",
+  "1" = "Monocyte",
+  "2" = "T cells",
+  "3" = "T cells",
+  "4" = "T cells",
+  "5" = "T cells",
+  "6" = "B cells",
+  "7" = "Monocyte",
+  "8" = "B cells",
+  "9" = "Mixed",
+  "10" = "NK cells",
+  "11" = "T cells",
+  "12" = "Monocyte",
+  "13" = "Mixed"
+)
+```
+
+```{r annotation plot, fig.width=10, fig.height=6, out.width="100%"}
+DimPlot(pbmc, reduction = "umap", label = TRUE, repel = TRUE,
+  cols = moma.colors("Ernst", n = length(unique(Idents(pbmc))))) +
+  ggtitle("PBMC Cell Type Annotation")
+```
+
+Alternatively I have tried to feed the output of of FindAllMarkers(), which shows the highly differentially expressed genes which are unique per cluster, into claude AI. I asked it to annotate each cluster based on the output. This way i was able to obtain a more detailed annotation of the clusters. Using AI for cluster annotation might be an interesting alternative to the laborious manual annotating method.
+```{r claude annotation,fig.width=10, fig.height=6, out.width="100%"}
+pbmc <- SetIdent(pbmc, value = pbmc$seurat_clusters)
 pbmc <- RenameIdents(pbmc,
   "0" = "CD14 Monocytes",
   "1" = "Intermediate Monocytes",
@@ -223,15 +274,9 @@ pbmc <- RenameIdents(pbmc,
 )
 ```
 
-```{r}
+```{r annotation plot claude, fig.width=10, fig.height=6, out.width="100%"}
 DimPlot(pbmc, reduction = "umap", label = TRUE, repel = TRUE,
   cols = moma.colors("Ernst", n = length(levels(pbmc)))) +
   ggtitle("PBMC Cell Type Annotation")
 ```
 
-
-## Bronnen
-https://www.10xgenomics.com/blog/how-does-single-cell-rna-seq-work
-https://www.10xgenomics.com/blog/how-single-cell-sequencing-data-analysis-works
-https://satijalab.org/seurat/articles/pbmc3k_tutorial
-https://cellxgene.cziscience.com/datasets
